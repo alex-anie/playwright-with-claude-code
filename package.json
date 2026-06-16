@@ -1,0 +1,22 @@
+{
+  "name": "playwright-with-claude-code",
+  "version": "1.0.0",
+  "description": "Playwright + Claude Code AI Test Automation project for TestMu AI blog",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "test:e2e": "npx playwright test tests/e2e/",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.19.43",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
