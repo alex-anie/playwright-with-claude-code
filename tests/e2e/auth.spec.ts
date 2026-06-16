@@ -16,7 +16,7 @@ test.describe('User Login', () => {
 
   test('should display login form', async ({ page }) => {
     // Verify the login form elements are present
-    const emailInput = page.getByRole('textbox', { name: /email/i });
+    const emailInput = page.getByPlaceholder('E-Mail Address');
     const passwordInput = page.locator('input[type="password"]');
     const loginBtn = page.getByRole('button', { name: /login/i });
 
@@ -26,7 +26,7 @@ test.describe('User Login', () => {
   });
 
   test('should show error on invalid credentials', async ({ page }) => {
-    const emailInput = page.getByRole('textbox', { name: /email/i });
+    const emailInput = page.getByPlaceholder('E-Mail Address');
     const passwordInput = page.locator('input[type="password"]');
     const loginBtn = page.getByRole('button', { name: /login/i });
 
@@ -43,13 +43,11 @@ test.describe('User Login', () => {
     const loginBtn = page.getByRole('button', { name: /login/i });
     await loginBtn.click();
 
-    // Email field should be required — either a browser tooltip or an alert
-    const emailInput = page.getByRole('textbox', { name: /email/i });
-    const validationMessage = await emailInput.evaluate(
-      (el: HTMLInputElement) => el.validationMessage
-    );
-    expect(validationMessage).not.toBe('');
-  });
+    // This site uses JS-based validation, not native HTML5 required fields.
+    // Submitting empty triggers the same "No match" warning as wrong credentials.
+    const errorAlert = page.locator('.alert-danger');
+    await expect(errorAlert).toBeVisible({ timeout: 5000 });
+});
 });
 
 test.describe('User Registration', () => {
@@ -58,9 +56,9 @@ test.describe('User Registration', () => {
   });
 
   test('should display registration form', async ({ page }) => {
-    const firstNameInput = page.getByRole('textbox', { name: /first name/i });
-    const lastNameInput = page.getByRole('textbox', { name: /last name/i });
-    const emailInput = page.getByRole('textbox', { name: /email/i });
+    const firstNameInput = page.getByPlaceholder('First Name');
+    const lastNameInput = page.getByPlaceholder('Last Name');
+    const emailInput = page.getByPlaceholder('E-Mail');
 
     await expect(firstNameInput).toBeVisible();
     await expect(lastNameInput).toBeVisible();
@@ -68,20 +66,18 @@ test.describe('User Registration', () => {
   });
 
   test('should show error when passwords do not match', async ({ page }) => {
-    await page.getByRole('textbox', { name: /first name/i }).fill('Test');
-    await page.getByRole('textbox', { name: /last name/i }).fill('User');
-    await page.getByRole('textbox', { name: /email/i }).fill('test@example.com');
-    await page.getByRole('textbox', { name: /telephone/i }).fill('1234567890');
+    await page.getByPlaceholder('First Name').fill('Test');
+    await page.getByPlaceholder('Last Name').fill('User');
+    await page.getByPlaceholder('E-Mail').fill('test@example.com');
+    await page.getByPlaceholder('Telephone').fill('1234567890');
 
     const passwordInputs = page.locator('input[type="password"]');
     await passwordInputs.nth(0).fill('Password123!');
     await passwordInputs.nth(1).fill('DifferentPassword!');
 
-    // Accept privacy policy
-    const privacyCheckbox = page.locator('input[name="agree"]');
-    if (await privacyCheckbox.count() > 0) {
-      await privacyCheckbox.check();
-    }
+    // Accept privacy policy — click the label since the checkbox itself
+    // is visually hidden by Bootstrap's custom-control styling
+    await page.locator('label[for="input-agree"]').click();
 
     await page.getByRole('button', { name: /continue/i }).click();
 
